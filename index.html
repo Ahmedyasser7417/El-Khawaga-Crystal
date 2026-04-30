@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ELKHAWAGA CRYSTAL — كاتالوج المنتجات</title>
+    <meta name="description" content="كاتالوج منتجات الخواجة كريستال — أرقى الكريستالات والديكورات الفاخرة" />
+    <link rel="icon" type="image/png" href="images/logo.png" />
+
+    <!-- Bootstrap 5 RTL -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <!-- ===================== GLOBAL SPINNER ===================== -->
+    <div id="globalSpinner" class="d-none">
+      <div class="spinner-inner">
+        <div class="spinner-border" role="status"></div>
+        <p>جارٍ التحميل...</p>
+      </div>
+    </div>
+
+    <!-- ===================== TOAST CONTAINER ===================== -->
+    <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ===================== NAVBAR ===================== -->
+    <nav class="navbar navbar-expand-lg custom-navbar">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">
+          <img src="images/logo.png" alt="ELKHAWAGA CRYSTAL" style="height:44px;width:44px;object-fit:contain;border-radius:6px;background:rgba(255,255,255,0.15);padding:2px;" />
+          <span>ELKHAWAGA CRYSTAL</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNav"
+          aria-controls="mainNav"
+          aria-expanded="false"
+          aria-label="فتح القائمة"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="index.html">
+                <i class="bi bi-house-door me-1"></i> الرئيسية
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="login.html">
+                <i class="bi bi-shield-lock me-1"></i> لوحة التحكم
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ===================== HERO ===================== -->
+    <section class="page-hero">
+      <div class="container">
+        <h1><i class="bi bi-gem me-2"></i>كاتالوج المنتجات</h1>
+        <p>اكتشف أرقى مجموعات الكريستال والديكورات الفاخرة</p>
+      </div>
+    </section>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main class="container my-4">
+      <!-- Search & Filter Bar -->
+      <div class="search-filter-bar">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="search"
+                id="searchInput"
+                class="form-control"
+                placeholder="ابحث عن منتج..."
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select id="categoryFilter" class="form-select">
+              <option value="">جميع التصنيفات</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button id="resetFilters" class="btn btn-outline-secondary w-100">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> إعادة
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Pills -->
+      <div id="categoryPills" class="category-pills"></div>
+
+      <!-- Products Count -->
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <span id="productsCount" class="text-muted fw-semibold fs-6"></span>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productsGrid" class="row g-4 products-grid">
+        <!-- Cards injected by JS -->
+      </div>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="site-footer">
+      <p>جميع الحقوق محفوظة &copy; <span id="year"></span> — الخواجة كريستال</p>
+    </footer>
+
+    <!-- ===================== SCRIPTS ===================== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+      import { getProducts } from "./js/products.js";
+      import { getCategories } from "./js/categories.js";
+      import { showSpinner, hideSpinner, formatPrice, emptyState } from "./js/ui.js";
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      let allProducts = [];
+      let allCategories = [];
+      let activeCategory = "";
+      let searchQuery = "";
+
+      // ---- Render cards ----
+      function renderProducts(products) {
+        const grid = document.getElementById("productsGrid");
+        const count = document.getElementById("productsCount");
+        grid.innerHTML = "";
+
+        count.textContent = `عرض ${products.length} منتج`;
+
+        if (products.length === 0) {
+          emptyState(grid, "لا توجد منتجات مطابقة للبحث");
+          return;
+        }
+
+        products.forEach((p, i) => {
+          const catName =
+            allCategories.find((c) => c.id === p.category_id)?.name || "غير مصنف";
+          const col = document.createElement("div");
+          col.className = "col col-lg-3 col-md-4 col-sm-6";
+          col.innerHTML = `
+            <div class="product-card h-100" onclick="window.location.href='details.html?id=${p.id}'"
+                 role="button" aria-label="${p.name}" style="animation-delay:${i * 0.05}s">
+              <div class="card-img-wrap">
+                ${
+                  p.imageUrl
+                    ? `<img src="${p.imageUrl}" alt="${p.name}" loading="lazy"/>`
+                    : `<div class="no-image"><i class="bi bi-image"></i></div>`
+                }
+                <span class="category-badge">${catName}</span>
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">${p.name}</h3>
+                <div class="card-price">${formatPrice(p.price)}</div>
+                <button class="btn-details">
+                  <i class="bi bi-eye me-1"></i> عرض التفاصيل
+                </button>
+              </div>
+            </div>`;
+          grid.appendChild(col);
+        });
+      }
+
+      // ---- Apply filters ----
+      function applyFilters() {
+        let filtered = allProducts;
+        if (activeCategory) {
+          filtered = filtered.filter((p) => p.category_id === activeCategory);
+        }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(
+            (p) =>
+              p.name?.toLowerCase().includes(q) ||
+              p.description?.toLowerCase().includes(q)
+          );
+        }
+        renderProducts(filtered);
+      }
+
+      // ---- Render category pills ----
+      function renderPills() {
+        const container = document.getElementById("categoryPills");
+        container.innerHTML = "";
+
+        const allPill = document.createElement("button");
+        allPill.className = "category-pill" + (activeCategory === "" ? " active" : "");
+        allPill.textContent = "الكل";
+        allPill.addEventListener("click", () => {
+          activeCategory = "";
+          document.getElementById("categoryFilter").value = "";
+          renderPills();
+          applyFilters();
+        });
+        container.appendChild(allPill);
+
+        allCategories.forEach((c) => {
+          const pill = document.createElement("button");
+          pill.className = "category-pill" + (activeCategory === c.id ? " active" : "");
+          pill.textContent = c.name;
+          pill.addEventListener("click", () => {
+            activeCategory = c.id;
+            document.getElementById("categoryFilter").value = c.id;
+            renderPills();
+            applyFilters();
+          });
+          container.appendChild(pill);
+        });
+      }
+
+      // ---- Populate category filter select ----
+      function populateSelect() {
+        const sel = document.getElementById("categoryFilter");
+        sel.innerHTML = `<option value="">جميع التصنيفات</option>`;
+        allCategories.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = c.name;
+          sel.appendChild(opt);
+        });
+      }
+
+      // ---- Init ----
+      async function init() {
+        showSpinner();
+        try {
+          [allProducts, allCategories] = await Promise.all([
+            getProducts(),
+            getCategories(),
+          ]);
+          populateSelect();
+          renderPills();
+          applyFilters();
+        } catch (e) {
+          console.error(e);
+        } finally {
+          hideSpinner();
+        }
+      }
+
+      // ---- Event listeners ----
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        searchQuery = e.target.value.trim();
+        applyFilters();
+      });
+
+      document.getElementById("categoryFilter").addEventListener("change", (e) => {
+        activeCategory = e.target.value;
+        renderPills();
+        applyFilters();
+      });
+
+      document.getElementById("resetFilters").addEventListener("click", () => {
+        searchQuery = "";
+        activeCategory = "";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("categoryFilter").value = "";
+        renderPills();
+        applyFilters();
+      });
+
+      init();
+    </script>
+  </body>
+</html>
