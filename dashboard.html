@@ -1,439 +1,520 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ELKHAWAGA CRYSTAL — لوحة التحكم</title>
-    <meta name="description" content="لوحة تحكم المسؤول لإدارة منتجات وتصنيفات الخواجة كريستال" />
-    <link rel="icon" type="image/png" href="images/logo.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="css/style.css" />
 
-    <style>
-      /* Extra dashboard-only tweaks */
-      .modal-content { font-family: "Cairo", sans-serif; }
-      .modal-header { background: linear-gradient(135deg, #E10600, #b80500); color: #fff; }
-      .modal-header .btn-close { filter: brightness(0) invert(1); }
-      .modal-title { font-weight: 700; font-size: 1.1rem; }
-      .img-preview-wrap {
-        width: 100%; height: 150px;
-        border: 2px dashed var(--border);
-        border-radius: var(--radius-sm);
-        display: flex; align-items: center; justify-content: center;
-        overflow: hidden; background: #fafafa; margin-top: 8px;
-        cursor: pointer; transition: border-color 0.3s;
-      }
-      .img-preview-wrap:hover { border-color: var(--primary); }
-      .img-preview-wrap img { width: 100%; height: 100%; object-fit: cover; }
-      .img-placeholder { text-align: center; color: var(--text-muted); }
-      .img-placeholder i { font-size: 2.5rem; display: block; margin-bottom: 6px; }
-      .price-input-wrap .currency-label {
-        background: var(--primary); color: #fff;
-        padding: 0.5rem 0.9rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-        font-weight: 700; font-size: 0.9rem;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELKHAWAGA CRYSTAL — لوحة التحكم</title>
+  <meta name="description" content="لوحة تحكم المسؤول لإدارة منتجات وتصنيفات الخواجة كريستال" />
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="css/style.css" />
 
-  <body style="background: #f4f5f7;">
-    <!-- Spinner -->
-    <div id="globalSpinner" class="d-none">
-      <div class="spinner-inner">
-        <div class="spinner-border" role="status"></div>
-        <p>جارٍ المعالجة...</p>
+  <style>
+    /* Extra dashboard-only tweaks */
+    .modal-content {
+      font-family: "Cairo", sans-serif;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #E10600, #b80500);
+      color: #fff;
+    }
+
+    .modal-header .btn-close {
+      filter: brightness(0) invert(1);
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .img-preview-wrap {
+      width: 100%;
+      min-height: 150px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      margin-top: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .img-preview-wrap:hover {
+      border-color: var(--primary);
+    }
+
+    .preview-thumb-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .preview-thumb-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-thumb-container .remove-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(225, 6, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .img-placeholder {
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .img-placeholder i {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .price-input-wrap .currency-label {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body style="background: #f4f5f7;">
+  <!-- Spinner -->
+  <div id="globalSpinner" class="d-none">
+    <div class="spinner-inner">
+      <div class="spinner-border" role="status"></div>
+      <p>جارٍ المعالجة...</p>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="dashboard-sidebar" id="dashSidebar">
+    <div class="sidebar-logo d-flex align-items-center gap-2">
+      <img src="images/logo.png" alt="ELKHAWAGA CRYSTAL"
+        style="width:46px;height:46px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.12);padding:3px;flex-shrink:0;" />
+      <div>
+        <div class="brand-name">ELKHAWAGA CRYSTAL</div>
+        <div class="brand-sub">لوحة التحكم</div>
       </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    <nav class="sidebar-nav">
+      <ul class="list-unstyled">
+        <li class="nav-item">
+          <a href="#" class="nav-link active" id="navOverview" data-section="overview">
+            <i class="bi bi-grid-1x2-fill"></i> نظرة عامة
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" id="navProducts" data-section="products">
+            <i class="bi bi-box-seam-fill"></i> المنتجات
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" id="navCategories" data-section="categories">
+            <i class="bi bi-tags-fill"></i> التصنيفات
+          </a>
+        </li>
+        <li class="nav-item mt-3">
+          <a href="index.html" class="nav-link" target="_blank">
+            <i class="bi bi-eye-fill"></i> عرض الكتالوج
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <!-- ==================== SIDEBAR ==================== -->
-    <aside class="dashboard-sidebar" id="dashSidebar">
-      <div class="sidebar-logo d-flex align-items-center gap-2">
-        <img src="images/logo.png" alt="ELKHAWAGA CRYSTAL" style="width:46px;height:46px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.12);padding:3px;flex-shrink:0;" />
-        <div>
-          <div class="brand-name">ELKHAWAGA CRYSTAL</div>
-          <div class="brand-sub">لوحة التحكم</div>
-        </div>
+    <div class="sidebar-footer">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-person-circle text-white fs-5"></i>
+        <small id="adminName" class="text-white-50 fs-7 text-truncate"
+          style="font-size:0.8rem;max-width:160px;"></small>
       </div>
+      <button id="logoutBtn" class="btn btn-sm w-100"
+        style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.2);font-family:'Cairo',sans-serif;font-weight:600;">
+        <i class="bi bi-box-arrow-left me-1"></i> تسجيل الخروج
+      </button>
+    </div>
+  </aside>
 
-      <nav class="sidebar-nav">
-        <ul class="list-unstyled">
-          <li class="nav-item">
-            <a href="#" class="nav-link active" id="navOverview" data-section="overview">
-              <i class="bi bi-grid-1x2-fill"></i> نظرة عامة
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" id="navProducts" data-section="products">
-              <i class="bi bi-box-seam-fill"></i> المنتجات
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" id="navCategories" data-section="categories">
-              <i class="bi bi-tags-fill"></i> التصنيفات
-            </a>
-          </li>
-          <li class="nav-item mt-3">
-            <a href="index.html" class="nav-link" target="_blank">
-              <i class="bi bi-eye-fill"></i> عرض الكاتالوج
-            </a>
-          </li>
-        </ul>
-      </nav>
+  <!-- ==================== MAIN ==================== -->
+  <div class="dashboard-main">
 
-      <div class="sidebar-footer">
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <i class="bi bi-person-circle text-white fs-5"></i>
-          <small id="adminName" class="text-white-50 fs-7 text-truncate" style="font-size:0.8rem;max-width:160px;"></small>
-        </div>
-        <button id="logoutBtn" class="btn btn-sm w-100" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.2);font-family:'Cairo',sans-serif;font-weight:600;">
-          <i class="bi bi-box-arrow-left me-1"></i> تسجيل الخروج
+    <!-- Topbar -->
+    <div class="dashboard-topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="فتح القائمة">
+          <i class="bi bi-list"></i>
         </button>
+        <span class="page-title" id="topbarTitle">نظرة عامة</span>
       </div>
-    </aside>
-
-    <!-- ==================== MAIN ==================== -->
-    <div class="dashboard-main">
-
-      <!-- Topbar -->
-      <div class="dashboard-topbar">
-        <div class="d-flex align-items-center gap-3">
-          <button class="sidebar-toggle" id="sidebarToggle" aria-label="فتح القائمة">
-            <i class="bi bi-list"></i>
-          </button>
-          <span class="page-title" id="topbarTitle">نظرة عامة</span>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge" style="background:#fff0f0;color:#E10600;font-family:'Cairo',sans-serif;font-size:0.8rem;padding:6px 12px;">
-            <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;vertical-align:middle;color:#22c55e;"></i> متصل
-          </span>
-        </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge"
+          style="background:#fff0f0;color:#E10600;font-family:'Cairo',sans-serif;font-size:0.8rem;padding:6px 12px;">
+          <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;vertical-align:middle;color:#22c55e;"></i> متصل
+        </span>
       </div>
+    </div>
 
-      <!-- Content -->
-      <div class="dashboard-content">
+    <!-- Content -->
+    <div class="dashboard-content">
 
-        <!-- ===== OVERVIEW SECTION ===== -->
-        <section id="sectionOverview" class="dash-section active">
-          <div class="row g-3 mb-4">
-            <div class="col-md-6">
-              <div class="stat-card">
-                <div class="stat-icon red"><i class="bi bi-box-seam-fill"></i></div>
-                <div>
-                  <div class="stat-value" id="statProducts">—</div>
-                  <div class="stat-label">إجمالي المنتجات</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="stat-card">
-                <div class="stat-icon red"><i class="bi bi-tags-fill"></i></div>
-                <div>
-                  <div class="stat-value" id="statCategories">—</div>
-                  <div class="stat-label">إجمالي التصنيفات</div>
-                </div>
+      <!-- ===== OVERVIEW SECTION ===== -->
+      <section id="sectionOverview" class="dash-section active">
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="bi bi-box-seam-fill"></i></div>
+              <div>
+                <div class="stat-value" id="statProducts">—</div>
+                <div class="stat-label">إجمالي المنتجات</div>
               </div>
             </div>
           </div>
-
-          <div class="dash-table">
-            <div class="table-header">
-              <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-danger"></i>آخر المنتجات المضافة</h6>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>الصورة</th>
-                    <th>الاسم</th>
-                    <th>التصنيف</th>
-                    <th>السعر</th>
-                  </tr>
-                </thead>
-                <tbody id="overviewTable">
-                  <tr><td colspan="4" class="text-center py-4 text-muted">جارٍ التحميل...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===== PRODUCTS SECTION ===== -->
-        <section id="sectionProducts" class="dash-section">
-          <div class="dash-table">
-            <div class="table-header">
-              <h6 class="mb-0 fw-bold"><i class="bi bi-box-seam-fill me-2 text-danger"></i>إدارة المنتجات</h6>
-              <div class="d-flex gap-2 flex-wrap">
-                <input type="search" id="dashSearchProducts" class="form-control form-control-sm" placeholder="بحث..." style="width:180px;" />
-                <button class="btn btn-sm btn-primary-custom" id="addProductBtn">
-                  <i class="bi bi-plus-lg me-1"></i> إضافة منتج
-                </button>
+          <div class="col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="bi bi-tags-fill"></i></div>
+              <div>
+                <div class="stat-value" id="statCategories">—</div>
+                <div class="stat-label">إجمالي التصنيفات</div>
               </div>
             </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>الصورة</th>
-                    <th>الاسم</th>
-                    <th>التصنيف</th>
-                    <th>السعر</th>
-                    <th>الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody id="productsTable">
-                  <tr><td colspan="5" class="text-center py-4 text-muted">جارٍ التحميل...</td></tr>
-                </tbody>
-              </table>
-            </div>
           </div>
-        </section>
+        </div>
 
-        <!-- ===== CATEGORIES SECTION ===== -->
-        <section id="sectionCategories" class="dash-section">
-          <div class="dash-table">
-            <div class="table-header">
-              <h6 class="mb-0 fw-bold"><i class="bi bi-tags-fill me-2 text-danger"></i>إدارة التصنيفات</h6>
-              <button class="btn btn-sm btn-primary-custom" id="addCategoryBtn">
-                <i class="bi bi-plus-lg me-1"></i> إضافة تصنيف
+        <div class="dash-table">
+          <div class="table-header">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-danger"></i>آخر المنتجات المضافة</h6>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>الصورة</th>
+                  <th>الاسم</th>
+                  <th>التصنيف</th>
+                  <th>السعر</th>
+                </tr>
+              </thead>
+              <tbody id="overviewTable">
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">جارٍ التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PRODUCTS SECTION ===== -->
+      <section id="sectionProducts" class="dash-section">
+        <div class="dash-table">
+          <div class="table-header">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-box-seam-fill me-2 text-danger"></i>إدارة المنتجات</h6>
+            <div class="d-flex gap-2 flex-wrap">
+              <input type="search" id="dashSearchProducts" class="form-control form-control-sm" placeholder="بحث..."
+                style="width:180px;" />
+              <button class="btn btn-sm btn-primary-custom" id="addProductBtn">
+                <i class="bi bi-plus-lg me-1"></i> إضافة منتج
               </button>
             </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>اسم التصنيف</th>
-                    <th>الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody id="categoriesTable">
-                  <tr><td colspan="3" class="text-center py-4 text-muted">جارٍ التحميل...</td></tr>
-                </tbody>
-              </table>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>الصورة</th>
+                  <th>الاسم</th>
+                  <th>التصنيف</th>
+                  <th>السعر</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="productsTable">
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">جارٍ التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CATEGORIES SECTION ===== -->
+      <section id="sectionCategories" class="dash-section">
+        <div class="dash-table">
+          <div class="table-header">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-tags-fill me-2 text-danger"></i>إدارة التصنيفات</h6>
+            <button class="btn btn-sm btn-primary-custom" id="addCategoryBtn">
+              <i class="bi bi-plus-lg me-1"></i> إضافة تصنيف
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>اسم التصنيف</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="categoriesTable">
+                <tr>
+                  <td colspan="3" class="text-center py-4 text-muted">جارٍ التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /dashboard-content -->
+  </div><!-- /dashboard-main -->
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalLabel">إضافة منتج جديد</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="productForm" novalidate>
+            <input type="hidden" id="productId" />
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="productName" class="form-label">اسم المنتج <span class="text-danger">*</span></label>
+                <input type="text" id="productName" class="form-control" placeholder="أدخل اسم المنتج" required />
+              </div>
+              <div class="col-md-6">
+                <label for="productCategory" class="form-label">التصنيف <span class="text-danger">*</span></label>
+                <select id="productCategory" class="form-select" required>
+                  <option value="">-- اختر التصنيف --</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="productPrice" class="form-label">السعر <span class="text-danger">*</span></label>
+                <div class="input-group price-input-wrap">
+                  <input type="number" id="productPrice" class="form-control" placeholder="0" min="0" required />
+                  <span class="currency-label">جنيه</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="productImage" class="form-label">صور المنتج</label>
+                <input type="file" id="productImage" class="form-control" accept="image/*" multiple />
+                <div class="img-preview-wrap" id="imgPreviewWrap">
+                  <div class="img-placeholder" id="imgPlaceholder" onclick="document.getElementById('productImage').click()" style="cursor: pointer;">
+                    <i class="bi bi-cloud-upload"></i>
+                    <small>اضغط لاختيار صور</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <label for="productDesc" class="form-label">الوصف</label>
+                <textarea id="productDesc" class="form-control" rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
+              </div>
             </div>
-          </div>
-        </section>
-
-      </div><!-- /dashboard-content -->
-    </div><!-- /dashboard-main -->
-
-    <!-- ==================== MODALS ==================== -->
-
-    <!-- Add/Edit Product Modal -->
-    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="productModalLabel">إضافة منتج جديد</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form id="productForm" novalidate>
-              <input type="hidden" id="productId" />
-              <input type="hidden" id="productImageUrl" />
-              <input type="hidden" id="productImagePath" />
-
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="productName" class="form-label">اسم المنتج <span class="text-danger">*</span></label>
-                  <input type="text" id="productName" class="form-control" placeholder="أدخل اسم المنتج" required />
-                </div>
-                <div class="col-md-6">
-                  <label for="productCategory" class="form-label">التصنيف <span class="text-danger">*</span></label>
-                  <select id="productCategory" class="form-select" required>
-                    <option value="">-- اختر التصنيف --</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label for="productPrice" class="form-label">السعر <span class="text-danger">*</span></label>
-                  <div class="input-group price-input-wrap">
-                    <input type="number" id="productPrice" class="form-control" placeholder="0" min="0" required />
-                    <span class="currency-label">جنيه</span>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <label for="productImage" class="form-label">صورة المنتج</label>
-                  <input type="file" id="productImage" class="form-control" accept="image/*" />
-                  <div class="img-preview-wrap" id="imgPreviewWrap" onclick="document.getElementById('productImage').click()">
-                    <div class="img-placeholder" id="imgPlaceholder">
-                      <i class="bi bi-cloud-upload"></i>
-                      <small>اضغط لاختيار صورة</small>
-                    </div>
-                    <img id="imgPreview" src="" alt="" style="display:none;" />
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label for="productDesc" class="form-label">الوصف</label>
-                  <textarea id="productDesc" class="form-control" rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
-            <button type="button" id="saveProductBtn" class="btn btn-primary-custom">
-              <i class="bi bi-check-lg me-1"></i> حفظ المنتج
-            </button>
-          </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+          <button type="button" id="saveProductBtn" class="btn btn-primary-custom">
+            <i class="bi bi-check-lg me-1"></i> حفظ المنتج
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Add/Edit Category Modal -->
-    <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="categoryModalLabel">إضافة تصنيف</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form id="categoryForm" novalidate>
-              <input type="hidden" id="categoryId" />
-              <div class="mb-3">
-                <label for="categoryName" class="form-label">اسم التصنيف <span class="text-danger">*</span></label>
-                <input type="text" id="categoryName" class="form-control" placeholder="مثال: كريستال، ديكور..." required />
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
-            <button type="button" id="saveCategoryBtn" class="btn btn-primary-custom">
-              <i class="bi bi-check-lg me-1"></i> حفظ
-            </button>
-          </div>
+  <!-- Add/Edit Category Modal -->
+  <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="categoryModalLabel">إضافة تصنيف</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="categoryForm" novalidate>
+            <input type="hidden" id="categoryId" />
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">اسم التصنيف <span class="text-danger">*</span></label>
+              <input type="text" id="categoryName" class="form-control" placeholder="مثال: كريستال، ديكور..."
+                required />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+          <button type="button" id="saveCategoryBtn" class="btn btn-primary-custom">
+            <i class="bi bi-check-lg me-1"></i> حفظ
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Delete Confirm Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header" style="background:#fff0f0;border-bottom:1px solid #ffd0d0;">
-            <h5 class="modal-title text-danger" id="deleteModalLabel">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i> تأكيد الحذف
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:none;"></button>
-          </div>
-          <div class="modal-body text-center py-3">
-            <p class="mb-0">هل أنت متأكد من حذف هذا العنصر؟<br /><small class="text-muted">لا يمكن التراجع عن هذا الإجراء</small></p>
-          </div>
-          <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">تراجع</button>
-            <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
-              <i class="bi bi-trash3-fill me-1"></i> حذف
-            </button>
-          </div>
+  <!-- Delete Confirm Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background:#fff0f0;border-bottom:1px solid #ffd0d0;">
+          <h5 class="modal-title text-danger" id="deleteModalLabel">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> تأكيد الحذف
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:none;"></button>
+        </div>
+        <div class="modal-body text-center py-3">
+          <p class="mb-0">هل أنت متأكد من حذف هذا العنصر؟<br /><small class="text-muted">لا يمكن التراجع عن هذا
+              الإجراء</small></p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">تراجع</button>
+          <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+            <i class="bi bi-trash3-fill me-1"></i> حذف
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module">
-      import { requireAuth, logoutAdmin } from "./js/auth.js";
-      import {
-        getProducts, addProduct, updateProduct, deleteProduct,
-      } from "./js/products.js";
-      import {
-        getCategories, addCategory, updateCategory, deleteCategory,
-        populateCategorySelects,
-      } from "./js/categories.js";
-      import { showSpinner, hideSpinner, showToast, formatPrice } from "./js/ui.js";
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import { requireAuth, logoutAdmin } from "./js/auth.js";
+    import {
+      getProducts, addProduct, updateProduct, deleteProduct,
+    } from "./js/products.js";
+    import {
+      getCategories, addCategory, updateCategory, deleteCategory,
+      populateCategorySelects,
+    } from "./js/categories.js";
+    import { showSpinner, hideSpinner, showToast, formatPrice } from "./js/ui.js";
 
-      // ---- Auth guard ----
-      await requireAuth();
+    // ---- Auth guard ----
+    await requireAuth();
 
-      // ---- State ----
-      let allProducts = [];
-      let allCategories = [];
-      let editingProductId = null;
-      let editingCategoryId = null;
+    // ---- State ----
+    let allProducts = [];
+    let allCategories = [];
+    let editingProductId = null;
+    let editingCategoryId = null;
+    let currentKeptImages = [];
+    let currentImagesToDelete = [];
+    let currentNewFiles = [];
 
-      // ---- Sidebar toggle (mobile) ----
-      const sidebar = document.getElementById("dashSidebar");
-      const overlay = document.getElementById("sidebarOverlay");
+    // ---- Sidebar toggle (mobile) ----
+    const sidebar = document.getElementById("dashSidebar");
+    const overlay = document.getElementById("sidebarOverlay");
 
-      document.getElementById("sidebarToggle").addEventListener("click", () => {
-        sidebar.classList.toggle("open");
-        overlay.classList.toggle("show");
-      });
-      overlay.addEventListener("click", () => {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("show");
-      });
+    document.getElementById("sidebarToggle").addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("show");
+    });
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+    });
 
-      // ---- Navigation ----
-      const sectionIds = ["overview", "products", "categories"];
-      const sectionTitles = {
-        overview: "نظرة عامة",
-        products: "إدارة المنتجات",
-        categories: "إدارة التصنيفات",
-      };
+    // ---- Navigation ----
+    const sectionIds = ["overview", "products", "categories"];
+    const sectionTitles = {
+      overview: "نظرة عامة",
+      products: "إدارة المنتجات",
+      categories: "إدارة التصنيفات",
+    };
 
-      function showSection(name) {
-        sectionIds.forEach((s) => {
-          document.getElementById(`section${capitalize(s)}`).classList.toggle("active", s === name);
-          document.getElementById(`nav${capitalize(s)}`).classList.toggle("active", s === name);
-        });
-        document.getElementById("topbarTitle").textContent = sectionTitles[name];
-        // Close sidebar on mobile
-        sidebar.classList.remove("open");
-        overlay.classList.remove("show");
-      }
-
-      function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-      }
-
+    function showSection(name) {
       sectionIds.forEach((s) => {
-        document.getElementById(`nav${capitalize(s)}`).addEventListener("click", (e) => {
-          e.preventDefault();
-          showSection(s);
-        });
+        document.getElementById(`section${capitalize(s)}`).classList.toggle("active", s === name);
+        document.getElementById(`nav${capitalize(s)}`).classList.toggle("active", s === name);
       });
+      document.getElementById("topbarTitle").textContent = sectionTitles[name];
+      // Close sidebar on mobile
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+    }
 
-      // ---- Logout ----
-      document.getElementById("logoutBtn").addEventListener("click", logoutAdmin);
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 
-      // ============================================================
-      // PRODUCTS
-      // ============================================================
+    sectionIds.forEach((s) => {
+      document.getElementById(`nav${capitalize(s)}`).addEventListener("click", (e) => {
+        e.preventDefault();
+        showSection(s);
+      });
+    });
 
-      function filterProducts(query) {
-        if (!query) return allProducts;
-        const q = query.toLowerCase();
-        return allProducts.filter(
-          (p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
-        );
-      }
+    // ---- Logout ----
+    document.getElementById("logoutBtn").addEventListener("click", logoutAdmin);
 
-      function renderProductsTable(products) {
-        const tbody = document.getElementById("productsTable");
-        tbody.innerHTML = "";
-        if (products.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">
+    // ============================================================
+    // PRODUCTS
+    // ============================================================
+
+    function filterProducts(query) {
+      if (!query) return allProducts;
+      const q = query.toLowerCase();
+      return allProducts.filter(
+        (p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+      );
+    }
+
+    function renderProductsTable(products) {
+      const tbody = document.getElementById("productsTable");
+      tbody.innerHTML = "";
+      if (products.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">
             <i class="bi bi-inbox d-block fs-2 mb-2"></i> لا توجد منتجات
           </td></tr>`;
-          return;
-        }
-        products.forEach((p) => {
-          const catName = allCategories.find((c) => c.id === p.category_id)?.name || "—";
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
+        return;
+      }
+      products.forEach((p) => {
+        const catName = allCategories.find((c) => c.id === p.category_id)?.name || "—";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
             <td>
-              ${
-                p.image_url
-                  ? `<img src="${p.image_url}" class="product-thumb" alt="${p.name}" />`
-                  : `<div class="no-thumb"><i class="bi bi-image"></i></div>`
-              }
+              ${p.image_url
+            ? `<img src="${p.image_url}" class="product-thumb" alt="${p.name}" />`
+            : `<div class="no-thumb"><i class="bi bi-image"></i></div>`
+          }
             </td>
             <td class="fw-semibold">${p.name}</td>
             <td><span class="badge" style="background:#fff0f0;color:#E10600;">${catName}</span></td>
@@ -442,131 +523,174 @@
               <button class="btn-icon edit me-1" data-id="${p.id}" title="تعديل" aria-label="تعديل ${p.name}">
                 <i class="bi bi-pencil-fill"></i>
               </button>
-              <button class="btn-icon del" data-id="${p.id}" data-path="${p.image_path || ""}" title="حذف" aria-label="حذف ${p.name}">
+              <button class="btn-icon del" data-id="${p.id}" title="حذف" aria-label="حذف ${p.name}">
                 <i class="bi bi-trash3-fill"></i>
               </button>
             </td>`;
-          tbody.appendChild(tr);
-        });
-
-        // Edit buttons
-        tbody.querySelectorAll(".btn-icon.edit").forEach((btn) => {
-          btn.addEventListener("click", () => openEditProduct(btn.dataset.id));
-        });
-        // Delete buttons
-        tbody.querySelectorAll(".btn-icon.del").forEach((btn) => {
-          btn.addEventListener("click", () =>
-            deleteProduct(btn.dataset.id, btn.dataset.path, loadAll)
-          );
-        });
-      }
-
-      document.getElementById("dashSearchProducts").addEventListener("input", (e) => {
-        renderProductsTable(filterProducts(e.target.value.trim()));
+        tbody.appendChild(tr);
       });
 
-      // ---- Product Modal ----
-      const productModal = new bootstrap.Modal(document.getElementById("productModal"));
-
-      function openAddProduct() {
-        editingProductId = null;
-        document.getElementById("productModalLabel").textContent = "إضافة منتج جديد";
-        document.getElementById("productForm").reset();
-        document.getElementById("productId").value = "";
-        document.getElementById("productImageUrl").value = "";
-        document.getElementById("productImagePath").value = "";
-        resetImgPreview();
-        populateCategorySelects("productCategory");
-        productModal.show();
-      }
-
-      function openEditProduct(id) {
-        const p = allProducts.find((x) => x.id === id);
-        if (!p) return;
-        editingProductId = id;
-        document.getElementById("productModalLabel").textContent = "تعديل المنتج";
-        document.getElementById("productId").value = id;
-        document.getElementById("productName").value = p.name || "";
-        document.getElementById("productPrice").value = p.price || "";
-        document.getElementById("productDesc").value = p.description || "";
-        document.getElementById("productImageUrl").value = p.image_url || "";
-        document.getElementById("productImagePath").value = p.image_path || "";
-        populateCategorySelects("productCategory").then(() => {
-          document.getElementById("productCategory").value = p.category_id || "";
+      // Edit buttons
+      tbody.querySelectorAll(".btn-icon.edit").forEach((btn) => {
+        btn.addEventListener("click", () => openEditProduct(btn.dataset.id));
+      });
+      // Delete buttons
+      tbody.querySelectorAll(".btn-icon.del").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const p = allProducts.find(x => x.id === btn.dataset.id);
+          deleteProduct(btn.dataset.id, p?.images || p?.image_path || "", loadAll);
         });
-        // Show existing image preview
-        if (p.image_url) {
-          document.getElementById("imgPreview").src = p.image_url;
-          document.getElementById("imgPreview").style.display = "block";
-          document.getElementById("imgPlaceholder").style.display = "none";
-        } else {
-          resetImgPreview();
-        }
-        productModal.show();
-      }
+      });
+    }
 
-      function resetImgPreview() {
-        const preview = document.getElementById("imgPreview");
-        const placeholder = document.getElementById("imgPlaceholder");
-        preview.src = "";
-        preview.style.display = "none";
+    document.getElementById("dashSearchProducts").addEventListener("input", (e) => {
+      renderProductsTable(filterProducts(e.target.value.trim()));
+    });
+
+    // ---- Product Modal ----
+    const productModal = new bootstrap.Modal(document.getElementById("productModal"));
+
+    function openAddProduct() {
+      editingProductId = null;
+      document.getElementById("productModalLabel").textContent = "إضافة منتج جديد";
+      document.getElementById("productForm").reset();
+      document.getElementById("productId").value = "";
+      
+      currentKeptImages = [];
+      currentImagesToDelete = [];
+      currentNewFiles = [];
+      renderPreviews();
+      
+      populateCategorySelects("productCategory");
+      productModal.show();
+    }
+
+    function openEditProduct(id) {
+      const p = allProducts.find((x) => x.id === id);
+      if (!p) return;
+      editingProductId = id;
+      document.getElementById("productModalLabel").textContent = "تعديل المنتج";
+      document.getElementById("productId").value = id;
+      document.getElementById("productName").value = p.name || "";
+      document.getElementById("productPrice").value = p.price || "";
+      document.getElementById("productDesc").value = p.description || "";
+      
+      populateCategorySelects("productCategory").then(() => {
+        document.getElementById("productCategory").value = p.category_id || "";
+      });
+      
+      currentKeptImages = p.images && p.images.length > 0 
+        ? [...p.images] 
+        : (p.image_url ? [{url: p.image_url, path: p.image_path}] : []);
+      currentImagesToDelete = [];
+      currentNewFiles = [];
+      document.getElementById("productImage").value = "";
+      renderPreviews();
+      
+      productModal.show();
+    }
+
+    function renderPreviews() {
+      const wrap = document.getElementById("imgPreviewWrap");
+      const placeholder = document.getElementById("imgPlaceholder");
+      
+      // Remove all existing thumbnails
+      wrap.querySelectorAll('.preview-thumb-container').forEach(el => el.remove());
+      
+      const totalImages = currentKeptImages.length + currentNewFiles.length;
+      
+      if (totalImages === 0) {
         placeholder.style.display = "block";
+      } else {
+        placeholder.style.display = "none";
+        
+        // Render kept images
+        currentKeptImages.forEach((img, index) => {
+          const div = document.createElement("div");
+          div.className = "preview-thumb-container";
+          div.innerHTML = `
+            <img src="${img.url}" alt="preview" />
+            <button type="button" class="remove-btn" onclick="removeKeptImage(${index})"><i class="bi bi-x"></i></button>
+          `;
+          wrap.appendChild(div);
+        });
+        
+        // Render new files
+        currentNewFiles.forEach((file, index) => {
+          const div = document.createElement("div");
+          div.className = "preview-thumb-container";
+          div.innerHTML = `
+            <img src="${URL.createObjectURL(file)}" alt="preview" />
+            <button type="button" class="remove-btn" onclick="removeNewFile(${index})"><i class="bi bi-x"></i></button>
+          `;
+          wrap.appendChild(div);
+        });
+      }
+    }
+    
+    window.removeKeptImage = function(index) {
+      const removed = currentKeptImages.splice(index, 1)[0];
+      if (removed && removed.path) {
+        currentImagesToDelete.push(removed.path);
+      }
+      renderPreviews();
+    };
+    
+    window.removeNewFile = function(index) {
+      currentNewFiles.splice(index, 1);
+      renderPreviews();
+    };
+
+    // Image preview on file select
+    document.getElementById("productImage").addEventListener("change", (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+      currentNewFiles = [...currentNewFiles, ...files];
+      // Reset input so same file can be selected again if needed
+      e.target.value = "";
+      renderPreviews();
+    });
+
+    document.getElementById("addProductBtn").addEventListener("click", openAddProduct);
+
+    document.getElementById("saveProductBtn").addEventListener("click", async () => {
+      const name = document.getElementById("productName").value.trim();
+      const price = document.getElementById("productPrice").value;
+      const categoryId = document.getElementById("productCategory").value;
+      const description = document.getElementById("productDesc").value.trim();
+
+      if (!name) { showToast("الرجاء إدخال اسم المنتج", "warning"); return; }
+      if (!price || isNaN(price) || Number(price) < 0) { showToast("الرجاء إدخال سعر صحيح", "warning"); return; }
+      if (!categoryId) { showToast("الرجاء اختيار التصنيف", "warning"); return; }
+
+      const data = { name, price: Number(price), categoryId: categoryId, description };
+
+      if (editingProductId) {
+        await updateProduct(editingProductId, data, currentNewFiles, currentImagesToDelete, currentKeptImages);
+      } else {
+        await addProduct(data, currentNewFiles);
       }
 
-      // Image preview on file select
-      document.getElementById("productImage").addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const preview = document.getElementById("imgPreview");
-        const placeholder = document.getElementById("imgPlaceholder");
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-        placeholder.style.display = "none";
-      });
+      productModal.hide();
+      await loadAll();
+    });
 
-      document.getElementById("addProductBtn").addEventListener("click", openAddProduct);
+    // ============================================================
+    // CATEGORIES
+    // ============================================================
 
-      document.getElementById("saveProductBtn").addEventListener("click", async () => {
-        const name = document.getElementById("productName").value.trim();
-        const price = document.getElementById("productPrice").value;
-        const categoryId = document.getElementById("productCategory").value;
-        const description = document.getElementById("productDesc").value.trim();
-        const imageFile = document.getElementById("productImage").files[0] || null;
-        const imageUrl = document.getElementById("productImageUrl").value;
-        const imagePath = document.getElementById("productImagePath").value;
-
-        if (!name) { showToast("الرجاء إدخال اسم المنتج", "warning"); return; }
-        if (!price || isNaN(price) || Number(price) < 0) { showToast("الرجاء إدخال سعر صحيح", "warning"); return; }
-        if (!categoryId) { showToast("الرجاء اختيار التصنيف", "warning"); return; }
-
-        const data = { name, price: Number(price), categoryId: categoryId, description, imageUrl: imageUrl };
-
-        if (editingProductId) {
-          await updateProduct(editingProductId, data, imageFile, imagePath);
-        } else {
-          await addProduct(data, imageFile);
-        }
-
-        productModal.hide();
-        await loadAll();
-      });
-
-      // ============================================================
-      // CATEGORIES
-      // ============================================================
-
-      function renderCategoriesTable() {
-        const tbody = document.getElementById("categoriesTable");
-        tbody.innerHTML = "";
-        if (allCategories.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">
+    function renderCategoriesTable() {
+      const tbody = document.getElementById("categoriesTable");
+      tbody.innerHTML = "";
+      if (allCategories.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">
             <i class="bi bi-inbox d-block fs-2 mb-2"></i> لا توجد تصنيفات
           </td></tr>`;
-          return;
-        }
-        allCategories.forEach((c, i) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
+        return;
+      }
+      allCategories.forEach((c, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
             <td class="text-muted">${i + 1}</td>
             <td class="fw-semibold">${c.name}</td>
             <td>
@@ -577,104 +701,105 @@
                 <i class="bi bi-trash3-fill"></i>
               </button>
             </td>`;
-          tbody.appendChild(tr);
-        });
-
-        tbody.querySelectorAll(".btn-icon.edit").forEach((btn) => {
-          btn.addEventListener("click", () => openEditCategory(btn.dataset.id, btn.dataset.name));
-        });
-        tbody.querySelectorAll(".btn-icon.del").forEach((btn) => {
-          btn.addEventListener("click", () =>
-            deleteCategory(btn.dataset.id, loadAll)
-          );
-        });
-      }
-
-      // ---- Category Modal ----
-      const categoryModal = new bootstrap.Modal(document.getElementById("categoryModal"));
-
-      function openAddCategory() {
-        editingCategoryId = null;
-        document.getElementById("categoryModalLabel").textContent = "إضافة تصنيف جديد";
-        document.getElementById("categoryForm").reset();
-        document.getElementById("categoryId").value = "";
-        categoryModal.show();
-      }
-
-      function openEditCategory(id, name) {
-        editingCategoryId = id;
-        document.getElementById("categoryModalLabel").textContent = "تعديل التصنيف";
-        document.getElementById("categoryId").value = id;
-        document.getElementById("categoryName").value = name;
-        categoryModal.show();
-      }
-
-      document.getElementById("addCategoryBtn").addEventListener("click", openAddCategory);
-
-      document.getElementById("saveCategoryBtn").addEventListener("click", async () => {
-        const name = document.getElementById("categoryName").value.trim();
-        if (!name) { showToast("الرجاء إدخال اسم التصنيف", "warning"); return; }
-
-        if (editingCategoryId) {
-          await updateCategory(editingCategoryId, name);
-        } else {
-          await addCategory(name);
-        }
-
-        categoryModal.hide();
-        await loadAll();
+        tbody.appendChild(tr);
       });
 
-      // ============================================================
-      // OVERVIEW TABLE
-      // ============================================================
-      function renderOverviewTable() {
-        const tbody = document.getElementById("overviewTable");
-        const recent = allProducts.slice(0, 6);
-        tbody.innerHTML = "";
-        if (recent.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">لا توجد منتجات بعد</td></tr>`;
-          return;
-        }
-        recent.forEach((p) => {
-          const catName = allCategories.find((c) => c.id === p.category_id)?.name || "—";
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
+      tbody.querySelectorAll(".btn-icon.edit").forEach((btn) => {
+        btn.addEventListener("click", () => openEditCategory(btn.dataset.id, btn.dataset.name));
+      });
+      tbody.querySelectorAll(".btn-icon.del").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          deleteCategory(btn.dataset.id, loadAll)
+        );
+      });
+    }
+
+    // ---- Category Modal ----
+    const categoryModal = new bootstrap.Modal(document.getElementById("categoryModal"));
+
+    function openAddCategory() {
+      editingCategoryId = null;
+      document.getElementById("categoryModalLabel").textContent = "إضافة تصنيف جديد";
+      document.getElementById("categoryForm").reset();
+      document.getElementById("categoryId").value = "";
+      categoryModal.show();
+    }
+
+    function openEditCategory(id, name) {
+      editingCategoryId = id;
+      document.getElementById("categoryModalLabel").textContent = "تعديل التصنيف";
+      document.getElementById("categoryId").value = id;
+      document.getElementById("categoryName").value = name;
+      categoryModal.show();
+    }
+
+    document.getElementById("addCategoryBtn").addEventListener("click", openAddCategory);
+
+    document.getElementById("saveCategoryBtn").addEventListener("click", async () => {
+      const name = document.getElementById("categoryName").value.trim();
+      if (!name) { showToast("الرجاء إدخال اسم التصنيف", "warning"); return; }
+
+      if (editingCategoryId) {
+        await updateCategory(editingCategoryId, name);
+      } else {
+        await addCategory(name);
+      }
+
+      categoryModal.hide();
+      await loadAll();
+    });
+
+    // ============================================================
+    // OVERVIEW TABLE
+    // ============================================================
+    function renderOverviewTable() {
+      const tbody = document.getElementById("overviewTable");
+      const recent = allProducts.slice(0, 6);
+      tbody.innerHTML = "";
+      if (recent.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">لا توجد منتجات بعد</td></tr>`;
+        return;
+      }
+      recent.forEach((p) => {
+        const catName = allCategories.find((c) => c.id === p.category_id)?.name || "—";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
             <td>${p.image_url ? `<img src="${p.image_url}" class="product-thumb" />` : `<div class="no-thumb"><i class="bi bi-image"></i></div>`}</td>
             <td class="fw-semibold">${p.name}</td>
             <td><span class="badge" style="background:#fff0f0;color:#E10600;">${catName}</span></td>
             <td class="fw-bold text-danger">${formatPrice(p.price)}</td>`;
-          tbody.appendChild(tr);
-        });
-      }
+        tbody.appendChild(tr);
+      });
+    }
 
-      // ============================================================
-      // LOAD ALL DATA
-      // ============================================================
-      async function loadAll() {
-        showSpinner();
-        try {
-          [allProducts, allCategories] = await Promise.all([getProducts(), getCategories()]);
-          // Stats
-          document.getElementById("statProducts").textContent = allProducts.length;
-          document.getElementById("statCategories").textContent = allCategories.length;
-          // Render
-          renderProductsTable(filterProducts(document.getElementById("dashSearchProducts").value.trim()));
-          renderCategoriesTable();
-          renderOverviewTable();
-        } catch (e) {
-          console.error(e);
-          showToast("حدث خطأ أثناء تحميل البيانات", "danger");
-        } finally {
-          hideSpinner();
-        }
+    // ============================================================
+    // LOAD ALL DATA
+    // ============================================================
+    async function loadAll() {
+      showSpinner();
+      try {
+        [allProducts, allCategories] = await Promise.all([getProducts(), getCategories()]);
+        // Stats
+        document.getElementById("statProducts").textContent = allProducts.length;
+        document.getElementById("statCategories").textContent = allCategories.length;
+        // Render
+        renderProductsTable(filterProducts(document.getElementById("dashSearchProducts").value.trim()));
+        renderCategoriesTable();
+        renderOverviewTable();
+      } catch (e) {
+        console.error(e);
+        showToast("حدث خطأ أثناء تحميل البيانات", "danger");
+      } finally {
+        hideSpinner();
       }
+    }
 
-      // ============================================================
-      // INIT
-      // ============================================================
-      document.getElementById("year") && (document.getElementById("year").textContent = new Date().getFullYear());
-      loadAll();
-    </script>
-  </body>
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.getElementById("year") && (document.getElementById("year").textContent = new Date().getFullYear());
+    loadAll();
+  </script>
+</body>
+
 </html>

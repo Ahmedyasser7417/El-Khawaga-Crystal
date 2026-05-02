@@ -32,38 +32,40 @@ export async function getProduct(id) {
   return data;
 }
 
-// ---- Upload Image to Supabase Storage ----
-async function uploadImage(file) {
-  const ext = file.name.split(".").pop();
-  const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+// ---- Upload Multiple Images to Supabase Storage ----
+async function uploadImages(files) {
+  const uploads = [];
+  for (const file of files) {
+    const ext = file.name.split(".").pop();
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, { upsert: false, contentType: file.type });
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { upsert: false, contentType: file.type });
 
-  if (uploadError) throw uploadError;
+    if (uploadError) throw uploadError;
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return { imageUrl: data.publicUrl, imagePath: path };
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    uploads.push({ url: data.publicUrl, path: path });
+  }
+  return uploads;
 }
 
-// ---- Delete Image from Storage ----
-async function deleteImage(imagePath) {
-  if (!imagePath) return;
-  await supabase.storage.from(BUCKET).remove([imagePath]);
+// ---- Delete Multiple Images from Storage ----
+async function deleteImages(imagePaths) {
+  if (!imagePaths || imagePaths.length === 0) return;
+  const { error } = await supabase.storage.from(BUCKET).remove(imagePaths);
+  if (error) console.error("Error deleting images:", error);
 }
 
 // ---- Add Product ----
-export async function addProduct(data, imageFile) {
+export async function addProduct(data, imageFiles) {
   showSpinner();
   try {
-    let imageUrl = "";
-    let imagePath = "";
+    let images = [];
 
-    if (imageFile) {
-      const uploaded = await uploadImage(imageFile);
-      imageUrl = uploaded.imageUrl;
-      imagePath = uploaded.imagePath;
+    if (imageFiles && imageFiles.length > 0) {
+      images = await uploadImages(imageFiles);
     }
 
     const { error } = await supabase.from("products").insert([{
@@ -71,8 +73,10 @@ export async function addProduct(data, imageFile) {
       price: data.price,
       category_id: data.categoryId,
       description: data.description || "",
-      image_url: imageUrl,
-      image_path: imagePath,
+      images: images,
+      // Fallback for old fields
+      image_url: images.length > 0 ? images[0].url : "",
+      image_path: images.length > 0 ? images[0].path : "",
     }]);
 
     if (error) throw error;
@@ -86,20 +90,19 @@ export async function addProduct(data, imageFile) {
 }
 
 // ---- Update Product ----
-export async function updateProduct(id, data, imageFile, oldImagePath) {
+export async function updateProduct(id, data, newImageFiles, imagesToDelete, keptImages) {
   showSpinner();
   try {
-    let imageUrl = data.imageUrl || "";
-    let imagePath = oldImagePath || "";
-
-    if (imageFile) {
-      // Delete old image first
-      await deleteImage(oldImagePath);
-      // Upload new image
-      const uploaded = await uploadImage(imageFile);
-      imageUrl = uploaded.imageUrl;
-      imagePath = uploaded.imagePath;
+    if (imagesToDelete && imagesToDelete.length > 0) {
+      await deleteImages(imagesToDelete);
     }
+
+    let uploadedImages = [];
+    if (newImageFiles && newImageFiles.length > 0) {
+      uploadedImages = await uploadImages(newImageFiles);
+    }
+
+    const finalImages = [...(keptImages || []), ...uploadedImages];
 
     const { error } = await supabase
       .from("products")
@@ -108,8 +111,10 @@ export async function updateProduct(id, data, imageFile, oldImagePath) {
         price: data.price,
         category_id: data.categoryId,
         description: data.description || "",
-        image_url: imageUrl,
-        image_path: imagePath,
+        images: finalImages,
+        // Update fallback fields
+        image_url: finalImages.length > 0 ? finalImages[0].url : "",
+        image_path: finalImages.length > 0 ? finalImages[0].path : "",
       })
       .eq("id", id);
 
@@ -124,12 +129,21 @@ export async function updateProduct(id, data, imageFile, oldImagePath) {
 }
 
 // ---- Delete Product ----
-export function deleteProduct(id, imagePath, onSuccess) {
+export function deleteProduct(id, productImagesData, onSuccess) {
   confirmDelete(async () => {
     showSpinner();
     try {
-      // Delete image from storage
-      await deleteImage(imagePath);
+      // Extract paths from productImagesData array or single string path
+      const paths = [];
+      if (Array.isArray(productImagesData)) {
+        paths.push(...productImagesData.map(img => img.path));
+      } else if (typeof productImagesData === 'string' && productImagesData) {
+        paths.push(productImagesData);
+      }
+
+      if (paths.length > 0) {
+        await deleteImages(paths);
+      }
 
       // Delete record from DB
       const { error } = await supabase
