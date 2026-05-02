@@ -66,7 +66,7 @@
   <!-- Footer -->
   <footer class="site-footer">
     <div class="container py-4">
-      <div class="row g-4 text-center text-md-end">
+      <div class="row g-4 text-center text-lg-start">
         <div class="col-md-4">
           <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i> العنوان</h5>
           <p class="mb-0 text-muted">3 ش المرسي العشري – المنطقة الصناعية – المحلة الكبرى</p>
@@ -74,16 +74,20 @@
         <div class="col-md-4">
           <h5 class="fw-bold mb-3"><i class="bi bi-telephone-fill text-danger me-1"></i> تواصل معنا</h5>
           <ul class="list-unstyled text-muted mb-0">
-            <li class="mb-2" dir="ltr"><a href="tel:01288678888" class="text-decoration-none text-muted">01288678888</a></li>
-            <li class="mb-2" dir="ltr"><a href="tel:01009154415" class="text-decoration-none text-muted">01009154415</a></li>
+            <li class="mb-2" dir="ltr"><a href="tel:01288678888" class="text-decoration-none text-muted">01288678888
+            </li>
+            <li class="mb-2" dir="ltr"><a href="tel:01009154415" class="text-decoration-none text-muted">01009154415</a>
+            </li>
             <li dir="ltr"><a href="tel:01152000793" class="text-decoration-none text-muted">01152000793</a></li>
           </ul>
         </div>
         <div class="col-md-4">
           <h5 class="fw-bold mb-3"><i class="bi bi-facebook text-primary me-1"></i> تابعنا</h5>
-          <a href="https://www.facebook.com/share/1B6DmYqRGU/" target="_blank" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-facebook me-1"></i> صفحتنا على فيسبوك
-          </a>
+          <div class="justify-content-center text-md-start">
+            <a href="https://www.facebook.com/share/1B6DmYqRGU/" target="_blank" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-facebook me-1"></i> صفحتنا على فيسبوك
+            </a>
+          </div>
         </div>
       </div>
       <hr class="mt-4 mb-3" style="opacity: 0.1;">
@@ -134,23 +138,23 @@
                 <div class="detail-image-wrap" id="mainImageWrap">
                   ${(product.images && product.images.length > 0)
             ? `<img id="mainProductImage" src="${product.images[0].url}" alt="${product.name}" />`
-            : (product.image_url 
-                ? `<img id="mainProductImage" src="${product.image_url}" alt="${product.name}" />` 
-                : `<div class="text-center p-5 text-muted">
+            : (product.image_url
+              ? `<img id="mainProductImage" src="${product.image_url}" alt="${product.name}" />`
+              : `<div class="text-center p-5 text-muted">
                            <i class="bi bi-image fs-1 d-block mb-2"></i>
                            <span>لا توجد صورة</span>
                          </div>`)
           }
                 </div>
-                ${(product.images && product.images.length > 1) 
-                  ? `<div class="d-flex gap-2 mt-3 flex-wrap" id="thumbnailGallery">
+                ${(product.images && product.images.length > 1)
+            ? `<div class="d-flex gap-2 mt-3 flex-wrap" id="thumbnailGallery">
                       ${product.images.map((img, idx) => `
                         <div class="thumbnail-item ${idx === 0 ? 'active' : ''}" style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : 'transparent'}; transition: border-color 0.2s;" onclick="changeMainImage('${img.url}', this)">
                           <img src="${img.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="thumbnail" />
                         </div>
                       `).join('')}
                     </div>`
-                  : ''}
+            : ''}
               </div>
 
               <!-- Info -->
@@ -196,9 +200,9 @@
     }
 
     init();
-    
+
     // Global function for gallery
-    window.changeMainImage = function(url, el) {
+    window.changeMainImage = function (url, el) {
       document.getElementById("mainProductImage").src = url;
       document.querySelectorAll(".thumbnail-item").forEach(item => {
         item.style.borderColor = "transparent";
