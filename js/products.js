@@ -32,16 +32,74 @@ export async function getProduct(id) {
   return data;
 }
 
+// ---- Compress Image Before Upload ----
+// يضغط الصورة: max 1200px وجودة JPEG 80% → يقلل الحجم بشكل كبير
+function compressImage(file, maxSize = 1200, quality = 0.8) {
+  return new Promise((resolve) => {
+    // GIF و SVG مش محتاجين ضغط
+    if (file.type === "image/gif" || file.type === "image/svg+xml") {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+
+      // Resize فقط لو أكبر من maxSize
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          const compressed = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          });
+          resolve(compressed);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file); // fallback: ارفع الأصلية لو حصل error
+    };
+
+    img.src = url;
+  });
+}
+
 // ---- Upload Multiple Images to Supabase Storage ----
 async function uploadImages(files) {
   const uploads = [];
   for (const file of files) {
-    const ext = file.name.split(".").pop();
-    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    // اضغط الصورة الأول
+    const compressed = await compressImage(file);
+
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, file, { upsert: false, contentType: file.type });
+      .upload(path, compressed, { upsert: false, contentType: "image/jpeg" });
 
     if (uploadError) throw uploadError;
 
@@ -53,9 +111,15 @@ async function uploadImages(files) {
 
 // ---- Delete Multiple Images from Storage ----
 async function deleteImages(imagePaths) {
-  if (!imagePaths || imagePaths.length === 0) return;
-  const { error } = await supabase.storage.from(BUCKET).remove(imagePaths);
-  if (error) console.error("Error deleting images:", error);
+  // فلتر القيم الفارغة أو null قبل الإرسال لـ Supabase
+  const validPaths = (imagePaths || []).filter(p => typeof p === "string" && p.trim() !== "");
+  if (validPaths.length === 0) return;
+
+  const { error } = await supabase.storage.from(BUCKET).remove(validPaths);
+  if (error) {
+    console.error("Storage deletion error:", error);
+    throw error; // throw عشان يظهر الخطأ للمستخدم
+  }
 }
 
 // ---- Add Product ----
@@ -133,12 +197,13 @@ export function deleteProduct(id, productImagesData, onSuccess) {
   confirmDelete(async () => {
     showSpinner();
     try {
-      // Extract paths from productImagesData array or single string path
+      // استخرج الـ paths من array الصور أو من string قديم
       const paths = [];
       if (Array.isArray(productImagesData)) {
-        paths.push(...productImagesData.map(img => img.path));
-      } else if (typeof productImagesData === 'string' && productImagesData) {
-        paths.push(productImagesData);
+        // فلتر القيم اللي مالهاش path صحيح
+        paths.push(...productImagesData.map(img => img?.path).filter(Boolean));
+      } else if (typeof productImagesData === "string" && productImagesData.trim()) {
+        paths.push(productImagesData.trim());
       }
 
       if (paths.length > 0) {
